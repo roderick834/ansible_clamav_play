@@ -1,0 +1,41 @@
+---
+- name: Update specific packages
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: latest
+    update_cache: latest
+  loop: "{{ packages }}"
+
+- name: Update virus pattern
+  ansible.builtin.shell: freshclam
+
+- name: Create a symbolic link
+  ansible.builtin.file:
+    src: /etc/clamd.d/scan.conf
+    dest: /etc/clamd.conf
+    state: link
+
+- name: Replace the file content
+  ansible.builtin.lineinfile:
+    path: "{{ clam_file }}"
+    regexp: "^{{ item.csrc }}"
+    line: "{{ item.cdes }}"
+  loop: "{{ file_modify }}"
+  ignore_errors: yes
+
+- name: Enable and start the service and ensure it is not masked
+  ansible.builtin.systemd:
+    name: clamd@scan.service
+    state: started
+    enabled: true
+    masked: no
+    daemon_reload: true
+
+- name: Register clamd version
+  ansible.builtin.shell: clamd -V
+  register: clam_version
+
+- name: Print Clamav version
+  debug:
+    msg: "{{ clam_version.stdout_lines }}"
+

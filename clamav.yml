@@ -1,0 +1,11 @@
+---
+- name: Clamav Install and Update
+  hosts: all
+  gather_facts: no
+  become: true
+  remote_user: "{{ ruser }}"
+  become_user: root
+  become_method: su
+  roles:
+    - clamav
+...

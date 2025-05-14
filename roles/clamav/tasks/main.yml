@@ -1,0 +1,53 @@
+---
+- name: Check repository
+  ansible.builtin.dnf:
+    name: "{{ repository }}"
+    state: present
+  register: repo_stat
+  check_mode: yes
+
+- name: Output result if repository is already installed
+  debug:
+    msg: "Repository {{ repository }} is already installed"
+  when: repo_stat.changed == false
+
+- name: Install repository if not installed
+  ansible.builtin.dnf:
+    name: "{{ repository }}"
+    state: latest
+    update_cache: true
+  when: repo_stat.changed == true
+
+- name: Check if the packages are installed and using DNF
+  ansible.builtin.dnf:
+    name: "{{ item }}"
+    state: latest
+  loop: "{{ packages }}"
+  register: pkg_stat
+
+- name: Output result if package is already installed
+  debug:
+    msg: "Package {{ item.item }} is already installed "
+  when: item.changed == false
+  loop: "{{ pkg_stat.results }}"
+
+- name: Output result if package is not the latest or not installed
+  debug:
+    msg: "Package {{ item.item }} is updating..."
+  when: item.changed == true
+  loop: "{{ pkg_stat.results }}"
+  notify:
+    - Update specific packages
+
+- name: Update and check systemd enable
+  debug:
+    msg: "Update and checking systemd"
+  changed_when: true
+  notify:
+    - Create a symbolic link
+    - Replace the file content
+    - Update virus pattern
+    - Enable and start the service and ensure it is not masked
+    - Register clamd version
+    - Print Clamav version
+...

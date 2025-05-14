@@ -1,0 +1,16 @@
+---
+packages:
+  - clamav
+  - clamav-update
+  - clamd 
+repository:
+  - epel-release
+clam_file: "/etc/clamd.d/scan.conf"
+file_modify:
+  - { csrc: 'Example', cdes: '#Example' }
+  - { csrc: 'TCPSocket', cdes: 'TCPSocket 3310' }
+  - { csrc: 'TCPAddr', cdes: 'TCPAddr 127.0.0.1' }
+  - { csrc: 'LocalSocket\s+', cdes: 'LocalSocket /tmp/clamd.sock' }
+  - { csrc: 'PidFile', cdes: 'PidFile /var/run/clamd.pid' }
+ruser: "webmail"
+...
